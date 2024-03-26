@@ -1,0 +1,159 @@
+from abc import ABC, abstractmethod
+
+class BankAccount(ABC):
+    def __init__(self, account_number=None, customer_name=None, balance=None):
+        self.account_number = account_number
+        self.customer_name = customer_name
+        self.balance = balance
+    
+    def get_account_number(self):
+        return self.account_number
+    
+    def set_account_number(self, account_number):
+        self.account_number = account_number
+    
+    def get_customer_name(self):
+        return self.customer_name
+    
+    def set_customer_name(self, customer_name):
+        self.customer_name = customer_name
+    
+    def get_balance(self):
+        return self.balance
+    
+    def set_balance(self, balance):
+        self.balance = balance
+    
+    def print_account_info(self):
+        print("Account Number:", self.account_number)
+        print("Customer Name:", self.customer_name)
+        print("Balance:", self.balance)
+
+    @abstractmethod
+    def deposit(self, amount):
+        pass
+    
+    @abstractmethod
+    def withdraw(self, amount):
+        pass
+    
+    @abstractmethod
+    def calculate_interest(self):
+        pass
+
+class SavingsAccount(BankAccount):
+    def __init__(self, account_number=None, customer_name=None, balance=None, interest_rate=None):
+        super().__init__(account_number, customer_name, balance)
+        self.interest_rate = interest_rate
+    
+    def deposit(self, amount):
+        self.balance += amount
+        print("Deposit successful. Updated balance:", self.balance)
+    
+    def withdraw(self, amount):
+        if self.balance >= amount:
+            self.balance -= amount
+            print("Withdrawal successful. Updated balance:", self.balance)
+        else:
+            print("Insufficient balance.")
+    
+    def calculate_interest(self):
+        interest_amount = self.balance * self.interest_rate
+        self.balance += interest_amount
+        print("Interest calculated and added to account balance. Updated balance:", self.balance)
+
+class CurrentAccount(BankAccount):
+    OVERDRAFT_LIMIT = 1000  # Example overdraft limit
+
+    def __init__(self, account_number=None, customer_name=None, balance=None):
+        super().__init__(account_number, customer_name, balance)
+
+    def deposit(self, amount):
+        self.balance += amount
+        print("Deposit successful. Updated balance:", self.balance)
+    
+    def withdraw(self, amount):
+        if self.balance + self.OVERDRAFT_LIMIT >= amount:
+            self.balance -= amount
+            print("Withdrawal successful. Updated balance:", self.balance)
+        else:
+            print("Withdrawal amount exceeds overdraft limit.")
+
+    def calculate_interest(self):
+        pass
+
+class Bank:
+    def create_account(self, account_type):
+        if account_type == "Savings":
+            account_number = int(input("Enter account number: "))
+            customer_name = input("Enter customer name: ")
+            initial_balance = float(input("Enter initial balance: "))
+            interest_rate = float(input("Enter interest rate: "))
+            return SavingsAccount(account_number, customer_name, initial_balance, interest_rate)
+        elif account_type == "Current":
+            account_number = int(input("Enter account number: "))
+            customer_name = input("Enter customer name: ")
+            initial_balance = float(input("Enter initial balance: "))
+            return CurrentAccount(account_number, customer_name, initial_balance)
+        else:
+            print("Invalid account type.")
+
+    def deposit(self, account, amount):
+        account.deposit(amount)
+
+    def withdraw(self, account, amount):
+        account.withdraw(amount)
+
+    def calculate_interest(self, account):
+        account.calculate_interest()
+
+def main():
+    bank = Bank()
+    
+    while True:
+        print("\nOptions:")
+        print("1. Create Savings Account")
+        print("2. Create Current Account")
+        print("3. Exit")
+        
+        choice = input("Enter your choice: ")
+
+        if choice == "1":
+            account_type = "Savings"
+            account = bank.create_account(account_type)
+            break
+        elif choice == "2":
+            account_type = "Current"
+            account = bank.create_account(account_type)
+            break
+        elif choice == "3":
+            print("Exiting...")
+            return
+        else:
+            print("Invalid choice. Please try again.")
+
+    while True:
+        print("\nAccount Options:")
+        print("1. Deposit")
+        print("2. Withdraw")
+        print("3. Calculate Interest")
+        print("4. Exit")
+
+        option = input("Enter option number: ")
+
+        if option == "1":
+            amount = float(input("Enter deposit amount: "))
+            bank.deposit(account, amount)
+        elif option == "2":
+            amount = float(input("Enter withdrawal amount: "))
+            bank.withdraw(account, amount)
+        elif option == "3":
+            bank.calculate_interest(account)
+        elif option == "4":
+            print("Exiting...")
+            break
+        else:
+            print("Invalid option. Please try again.")
+
+if __name__ == "__main__":
+    main()
