@@ -1,0 +1,18 @@
+def calculate_future_balance(ib,air, years):
+    fb = ib * (1 + airate/100) ** years
+    return fb
+
+def main():
+    numcustomers = int(input("Enter the number of customers: "))
+
+    for i in range(1, numcustomers + 1):
+        print("\nCustomer", i)
+        ib = float(input("Enter initial balance ($): "))
+        air = float(input("Enter annual interest rate (%): "))
+        years = int(input("Enter number of years: "))
+
+        fb = calculate_future_balance(ib, air, years)
+        print("Future balance for Customer", i, ": $", round(fb, 2))
+
+if __name__ == "__main__":
+    main()
