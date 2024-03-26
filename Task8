@@ -1,0 +1,119 @@
+class Account:
+    def __init__(self, account_number=None, account_type=None, account_balance=None):
+        self.account_number = account_number
+        self.account_type = account_type
+        self.account_balance = account_balance
+    
+    def get_account_number(self):
+        return self.account_number
+    
+    def set_account_number(self, account_number):
+        self.account_number = account_number
+    
+    def get_account_type(self):
+        return self.account_type
+    
+    def set_account_type(self, account_type):
+        self.account_type = account_type
+    
+    def get_account_balance(self):
+        return self.account_balance
+    
+    def set_account_balance(self, account_balance):
+        self.account_balance = account_balance
+    
+    def print_account_info(self):
+        print("Account Number:", self.account_number)
+        print("Account Type:", self.account_type)
+        print("Account Balance:", self.account_balance)
+
+    def deposit(self, amount):
+        self.account_balance += amount
+        print("Deposit successful. Updated balance:", self.account_balance)
+    
+    def withdraw(self, amount):
+        if self.account_balance >= amount:
+            self.account_balance -= amount
+            print("Withdrawal successful. Updated balance:", self.account_balance)
+        else:
+            print("Insufficient balance.")
+
+    def calculate_interest(self):
+        pass
+
+class SavingsAccount(Account):
+    def __init__(self, account_number=None, account_balance=None, interest_rate=None):
+        super().__init__(account_number, "Savings", account_balance)
+        self.interest_rate = interest_rate
+    
+    def calculate_interest(self):
+        interest_amount = self.account_balance * self.interest_rate
+        self.account_balance += interest_amount
+        print("Interest calculated and added to account balance. Updated balance:", self.account_balance)
+
+class CurrentAccount(Account):
+    OVERDRAFT_LIMIT = 1000  # Example overdraft limit
+
+    def __init__(self, account_number=None, account_balance=None):
+        super().__init__(account_number, "Current", account_balance)
+
+    def withdraw(self, amount):
+        if self.account_balance + self.OVERDRAFT_LIMIT >= amount:
+            self.account_balance -= amount
+            print("Withdrawal successful. Updated balance:", self.account_balance)
+        else:
+            print("Withdrawal amount exceeds overdraft limit.")
+
+
+class Bank:
+    def create_account(self, account_type, account_number, initial_balance):
+        if account_type == "Savings":
+            return SavingsAccount(account_number, initial_balance, 0.045)  # 4.5% interest rate
+        elif account_type == "Current":
+            return CurrentAccount(account_number, initial_balance)
+        else:
+            print("Invalid account type.")
+
+    def deposit(self, account, amount):
+        account.deposit(amount)
+
+    def withdraw(self, account, amount):
+        account.withdraw(amount)
+
+    def calculate_interest(self, account):
+        account.calculate_interest()
+
+def main():
+    bank = Bank()
+    
+    # Display menu for user to choose account type
+    print("Choose Account Type:")
+    print("1. Savings Account")
+    print("2. Current Account")
+    account_type = input("Enter your choice: ")
+
+    if account_type == "1":
+        account_type = "Savings"
+    elif account_type == "2":
+        account_type = "Current"
+    else:
+        print("Invalid choice.")
+
+    # Create account
+    account = bank.create_account(account_type, 123456, 1000)
+
+    # Deposit into the account
+    bank.deposit(account, 500)
+
+    # Withdraw from the account
+    bank.withdraw(account, 200)
+
+    # Calculate interest for the account (for Savings Account only)
+    if isinstance(account, SavingsAccount):
+        bank.calculate_interest(account)
+
+    # Print account information
+    account.print_account_info()
+
+if __name__ == "__main__":
+    main()
