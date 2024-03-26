@@ -1,0 +1,238 @@
+from abc import ABC, abstractmethod
+
+class Customer:
+    def __init__(self, customer_id=None, first_name=None, last_name=None, email=None, phone_number=None, address=None):
+        self.customer_id = customer_id
+        self.first_name = first_name
+        self.last_name = last_name
+        self.email = email
+        self.phone_number = phone_number
+        self.address = address
+    
+    def get_customer_id(self):
+        return self.customer_id
+    
+    def set_customer_id(self, customer_id):
+        self.customer_id = customer_id
+    
+    def get_first_name(self):
+        return self.first_name
+    
+    def set_first_name(self, first_name):
+        self.first_name = first_name
+    
+    def get_last_name(self):
+        return self.last_name
+    
+    def set_last_name(self, last_name):
+        self.last_name = last_name
+    
+    def get_email(self):
+        return self.email
+    
+    def set_email(self, email):
+        self.email = email
+    
+    def get_phone_number(self):
+        return self.phone_number
+    
+    def set_phone_number(self, phone_number):
+        self.phone_number = phone_number
+    
+    def get_address(self):
+        return self.address
+    
+    def set_address(self, address):
+        self.address = address
+    
+    def print_customer_info(self):
+        print("Customer ID:", self.customer_id)
+        print("First Name:", self.first_name)
+        print("Last Name:", self.last_name)
+        print("Email Address:", self.email)
+        print("Phone Number:", self.phone_number)
+        print("Address:", self.address)
+
+class Account(ABC):
+    last_account_number = 1000
+
+    def __init__(self, account_type=None, account_balance=None, customer=None):
+        Account.last_account_number += 1
+        self.account_number = Account.last_account_number
+        self.account_type = account_type
+        self.account_balance = account_balance
+        self.customer = customer
+
+    @abstractmethod
+    def deposit(self, amount):
+        pass
+    
+    @abstractmethod
+    def withdraw(self, amount):
+        pass
+
+class SavingsAccount(Account):
+    def __init__(self, customer, account_balance=500):
+        super().__init__("Savings", account_balance, customer)
+        self.interest_rate = 0.05  # 5% interest rate
+
+    def deposit(self, amount):
+        self.account_balance += amount
+        print("Deposit successful. Updated balance:", self.account_balance)
+
+    def withdraw(self, amount):
+        if self.account_balance - amount >= 500:
+            self.account_balance -= amount
+            print("Withdrawal successful. Updated balance:", self.account_balance)
+        else:
+            print("Insufficient balance. Minimum balance of 500 should be maintained.")
+
+class CurrentAccount(Account):
+    def __init__(self, customer):
+        super().__init__("Current", 0, customer)
+        self.overdraft_limit = 1000
+
+    def deposit(self, amount):
+        self.account_balance += amount
+        print("Deposit successful. Updated balance:", self.account_balance)
+
+    def withdraw(self, amount):
+        self.account_balance -= amount
+        print("Withdrawal successful. Updated balance:", self.account_balance)
+
+class ZeroBalanceAccount(Account):
+    def __init__(self, customer):
+        super().__init__("Zero Balance", 0, customer)
+
+    def deposit(self, amount):
+        self.account_balance += amount
+        print("Deposit successful. Updated balance:", self.account_balance)
+
+    def withdraw(self, amount):
+        if self.account_balance - amount >= 0:
+            self.account_balance -= amount
+            print("Withdrawal successful. Updated balance:", self.account_balance)
+        else:
+            print("Insufficient balance.")
+
+class ICustomerServiceProvider(ABC):
+    @abstractmethod
+    def get_account_balance(self, account_number):
+        pass
+    
+    @abstractmethod
+    def deposit(self, account_number, amount):
+        pass
+    
+    @abstractmethod
+    def withdraw(self, account_number, amount):
+        pass
+    
+    @abstractmethod
+    def transfer(self, from_account_number, to_account_number, amount):
+        pass
+    
+    @abstractmethod
+    def get_account_details(self, account_number):
+        pass
+
+class IBankServiceProvider(ICustomerServiceProvider):
+    @abstractmethod
+    def create_account(self, customer, acc_no, acc_type, balance):
+        pass
+    
+    @abstractmethod
+    def list_accounts(self):
+        pass
+    
+    @abstractmethod
+    def calculate_interest(self):
+        pass
+
+class CustomerServiceProviderImpl(ICustomerServiceProvider):
+    def __init__(self):
+        self.accounts = []
+
+    def get_account_balance(self, account_number):
+        for account in self.accounts:
+            if account.account_number == account_number:
+                return account.account_balance
+        return None
+
+    def deposit(self, account_number, amount):
+        for account in self.accounts:
+            if account.account_number == account_number:
+                account.account_balance += amount
+                return account.account_balance
+        return None
+
+    def withdraw(self, account_number, amount):
+        for account in self.accounts:
+            if account.account_number == account_number:
+                if account.account_balance >= amount:
+                    account.account_balance -= amount
+                    return account.account_balance
+                else:
+                    print("Insufficient balance.")
+                    return None
+        return None
+
+    def transfer(self, from_account_number, to_account_number, amount):
+        from_account = None
+        to_account = None
+        for account in self.accounts:
+            if account.account_number == from_account_number:
+                from_account = account
+            elif account.account_number == to_account_number:
+                to_account = account
+
+        if from_account and to_account:
+            if from_account.account_balance >= amount:
+                from_account.account_balance -= amount
+                to_account.account_balance += amount
+                return from_account.account_balance
+            else:
+                print("Insufficient balance.")
+                return None
+        else:
+            print("One or both accounts not found.")
+            return None
+
+    def get_account_details(self, account_number):
+        for account in self.accounts:
+            if account.account_number == account_number:
+                return account
+        return None
+
+class BankServiceProviderImpl(CustomerServiceProviderImpl, IBankServiceProvider):
+    def create_account(self, customer, acc_no, acc_type, balance):
+        if acc_type == "Savings":
+            new_account = SavingsAccount(customer)
+        elif acc_type == "Current":
+            new_account = CurrentAccount(customer)
+        elif acc_type == "Zero Balance":
+            new_account = ZeroBalanceAccount(customer)
+        else:
+            print("Invalid account type.")
+            return None
+
+        new_account.account_number = acc_no
+        new_account.account_balance = balance
+        self.accounts.append(new_account)
+        return new_account
+
+    def list_accounts(self):
+        return self.accounts
+    
+    def calculate_interest(self):
+        for account in self.accounts:
+            if isinstance(account, SavingsAccount):
+                interest = account.account_balance * account.interest_rate
+                account.account_balance += interest
+
+class BankApp:
+    @staticmethod
+    def main():
+        bank = BankServiceProviderImpl()
+        while True:
+           
