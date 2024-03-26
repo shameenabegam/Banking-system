@@ -1,0 +1,16 @@
+def check_loan_eligibility(cs,ai):
+    if cs > 700 and ai >= 50000:
+        return True
+    else:
+        return False
+
+def main():
+    cs = int(input("Enter your credit score: "))
+    ai = float(input("Enter your annual income ($): "))
+    eligible = check_loan_eligibility(cs,ai)
+    if eligible:
+        print("You are eligible for a loan.")
+    else:
+        print("You are not eligible for a loan at this time.")
+if __name__ == "__main__":
+    main()
