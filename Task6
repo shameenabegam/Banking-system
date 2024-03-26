@@ -1,0 +1,34 @@
+def display_transaction_history(transaction_history):
+    print("\nTransaction History:")
+    for index, transaction in enumerate(transaction_history, start=1):
+        print(f"{index}. {transaction}")
+
+def main():
+    transaction_history = []
+    
+    while True:
+        print("\nOptions:")
+        print("1. Deposit")
+        print("2. Withdraw")
+        print("3. Exit")
+        
+        choice = input("Enter your choice: ")
+        
+        if choice == '1':
+            deposit_amount = float(input("Enter the deposit amount: "))
+            transaction_history.append(f"Deposit: +${deposit_amount}")
+            print("Deposit successful.")
+        elif choice == '2':
+            withdraw_amount = float(input("Enter the withdrawal amount: "))
+            transaction_history.append(f"Withdrawal: -${withdraw_amount}")
+            print("Withdrawal successful.")
+        elif choice == '3':
+            print("Exiting...")
+            break
+        else:
+            print("Invalid choice. Please try again.")
+
+    display_transaction_history(transaction_history)
+
+if __name__ == "__main__":
+    main()
