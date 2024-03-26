@@ -1,0 +1,24 @@
+customer_accounts = {
+    123456: 5000,
+    987654: 10000,
+    555555: 7500,
+    777777: 3000
+}
+def check_balance(ac):
+    if ac in cac:
+        balance = cac[ac]
+        print("Account balance for account number", ac, ": $", balance)
+    else:
+        print("Invalid account number. Please try again.")
+
+def main():
+    while True:
+        try:
+            ac = int(input("Enter your account number: "))
+            check_balance(ac)
+            break
+        except ValueError:
+            print("Invalid input. Please enter a valid account number.")
+
+if __name__ == "__main__":
+    main()
