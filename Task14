@@ -1,0 +1,420 @@
+import datetime
+from abc import ABC, abstractmethod
+from datetime import datetime
+from typing import List
+from typing import Dict
+class Customer:
+    def __init__(self, customer_id, first_name, last_name, email, phone_number, address):
+        self.customer_id = customer_id
+        self.first_name = first_name
+        self.last_name = last_name
+        self.email = email
+        self.phone_number = phone_number
+        self.address = address
+
+class Account:
+    last_acc_no = 1000  # Static variable to generate account numbers
+    
+    def __init__(self, account_type, balance, customer):
+        Account.last_acc_no += 1
+        self.account_number = Account.last_acc_no
+        self.account_type = account_type
+        self.balance = balance
+        self.customer = customer
+
+class Transaction:
+    def __init__(self, account, description, transaction_type, transaction_amount):
+        self.account = account
+        self.description = description
+        self.date_time = datetime.datetime.now()
+        self.transaction_type = transaction_type
+        self.transaction_amount = transaction_amount
+class SavingsAccount(Account):
+    def __init__(self, customer, interest_rate, balance=0):
+        super().__init__("Savings", balance, customer)
+        self.interest_rate = interest_rate
+        self.minimum_balance = 500
+
+    def withdraw(self, amount):
+        if self.balance - amount < self.minimum_balance:
+            print("Withdrawal failed: Minimum balance constraint violated.")
+            return self.balance
+        self.balance -= amount
+        return self.balance
+
+
+class CurrentAccount(Account):
+    def __init__(self, customer, overdraft_limit, balance=0):
+        super().__init__("Current", balance, customer)
+        self.overdraft_limit = overdraft_limit
+
+    def withdraw(self, amount):
+        available_balance = self.balance + self.overdraft_limit
+        if amount > available_balance:
+            print("Withdrawal failed: Insufficient funds.")
+            return self.balance
+        self.balance -= amount
+        return self.balance
+
+
+class ZeroBalanceAccount(Account):
+    def __init__(self, customer):
+        super().__init__("Zero Balance", 0, customer)
+
+
+class ICustomerServiceProvider(ABC):
+    @abstractmethod
+    def get_account_balance(self, account_number: int) -> float:
+        pass
+
+    @abstractmethod
+    def deposit(self, account_number: int, amount: float) -> float:
+        pass
+
+    @abstractmethod
+    def withdraw(self, account_number: int, amount: float) -> float:
+        pass
+
+    @abstractmethod
+    def transfer(self, from_account_number: int, to_account_number: int, amount: float) -> bool:
+        pass
+
+    @abstractmethod
+    def get_transactions(self, account_number: int, from_date: datetime, to_date: datetime) -> List[Transaction]:
+        pass
+
+
+class IBankServiceProvider(ABC):
+    @abstractmethod
+    def create_account(self, customer: Customer, acc_no: int, acc_type: str, balance: float) -> Account:
+        pass
+
+    @abstractmethod
+    def list_accounts(self) -> List[Account]:
+        pass
+
+    @abstractmethod
+    def get_account_details(self, account_number: int) -> Account:
+        pass
+
+    @abstractmethod
+    def calculate_interest(self):
+        pass
+
+class CustomerServiceProviderImpl(ICustomerServiceProvider):
+    def __init__(self):
+        self.account_list = []
+        self.transaction_list = []
+
+    def get_account_balance(self, account_number: int) -> float:
+        for account in self.account_list:
+            if account.account_number == account_number:
+                return account.balance
+        return -1
+
+    def deposit(self, account_number: int, amount: float) -> float:
+        for account in self.account_list:
+            if account.account_number == account_number:
+                account.balance += amount
+                return account.balance
+        return -1
+
+    def withdraw(self, account_number: int, amount: float) -> float:
+        for account in self.account_list:
+            if account.account_number == account_number:
+                if isinstance(account, SavingsAccount) and (account.balance - amount) < account.minimum_balance:
+                    print("Withdrawal failed: Minimum balance constraint violated.")
+                    return -1
+                elif isinstance(account, CurrentAccount) and (account.balance + account.overdraft_limit) < amount:
+                    print("Withdrawal failed: Insufficient funds.")
+                    return -1
+                else:
+                    account.balance -= amount
+                    return account.balance
+        return -1
+
+    def transfer(self, from_account_number: int, to_account_number: int, amount: float) -> bool:
+        from_account = next((acc for acc in self.account_list if acc.account_number == from_account_number), None)
+        to_account = next((acc for acc in self.account_list if acc.account_number == to_account_number), None)
+
+        if from_account and to_account:
+            if from_account.balance >= amount:
+                from_account.balance -= amount
+                to_account.balance += amount
+                return True
+            else:
+                print("Transfer failed: Insufficient funds in the source account.")
+        else:
+            print("Transfer failed: One or both accounts not found.")
+        return False
+
+    def get_transactions(self, account_number: int, from_date: datetime, to_date: datetime) -> List[Transaction]:
+        transactions = []
+        for transaction in self.transaction_list:
+            if transaction.account.account_number == account_number and from_date <= transaction.date_time <= to_date:
+                transactions.append(transaction)
+        return transactions
+
+
+class BankServiceProviderImpl(CustomerServiceProviderImpl, IBankServiceProvider):
+    def __init__(self, branch_name: str, branch_address: str):
+        super().__init__()
+        self.branch_name = branch_name
+        self.branch_address = branch_address
+
+    def create_account(self, customer: Customer, acc_no: int, acc_type: str, balance: float) -> Account:
+        if acc_type.lower() == "savings":
+            account = SavingsAccount(customer, 0.0, balance)
+        elif acc_type.lower() == "current":
+            account = CurrentAccount(customer, 0.0, balance)
+        else:
+            account = ZeroBalanceAccount(customer)
+        self.account_list.append(account)
+        return account
+
+    def list_accounts(self) -> List[Account]:
+        return self.account_list
+
+    def get_account_details(self, account_number: int) -> Account:
+        for account in self.account_list:
+            if account.account_number == account_number:
+                return account
+        return None
+
+    def calculate_interest(self):
+        for account in self.account_list:
+            if isinstance(account, SavingsAccount):
+                interest = account.balance * account.interest_rate / 100
+                account.balance += interest
+                print(f"Interest calculated for account {account.account_number}: {interest}")
+
+    def createAccount(self, customer: Customer, accNo: int, accType: str, balance: float) -> Account:
+        pass
+
+    def listAccounts(self) -> List[Account]:
+        pass
+
+    def calculateInterest(self):
+        pass
+
+    def getAccountBalance(self, account_number: int) -> float:
+        pass
+
+    def deposit(self, account_number: int, amount: float) -> float:
+        pass
+
+    def withdraw(self, account_number: int, amount: float) -> float:
+        pass
+
+    def transfer(self, from_account_number: int, to_account_number: int, amount: float) -> bool:
+        pass
+
+    def getAccountDetails(self, account_number: int) -> Account:
+        pass
+
+    def getTransactions(self, account_number: int, FromDate: datetime, ToDate: datetime) -> List[Transaction]:
+        pass
+
+
+class IBankRepository(ABC):
+    @abstractmethod
+    def createAccount(self, customer: Customer, accNo: int, accType: str, balance: float) -> Account:
+        pass
+
+    @abstractmethod
+    def listAccounts(self) -> List[Account]:
+        pass
+
+    @abstractmethod
+    def calculateInterest(self):
+        pass
+
+    @abstractmethod
+    def getAccountBalance(self, account_number: int) -> float:
+        pass
+
+    @abstractmethod
+    def deposit(self, account_number: int, amount: float) -> float:
+        pass
+
+    @abstractmethod
+    def withdraw(self, account_number: int, amount: float) -> float:
+        pass
+
+    @abstractmethod
+    def transfer(self, from_account_number: int, to_account_number: int, amount: float) -> bool:
+        pass
+
+    @abstractmethod
+    def getAccountDetails(self, account_number: int) -> Account:
+        pass
+
+    @abstractmethod
+    def getTransactions(self, account_number: int, FromDate: datetime, ToDate: datetime) -> List[Transaction]:
+        pass
+import sqlite3
+from datetime import datetime
+from typing import List
+
+
+class BankRepositoryImpl(IBankRepository):
+    def __init__(self, db_file: str):
+        self.db_file = db_file
+
+    def createAccount(self, customer: Customer, accNo: int, accType: str, balance: float) -> Account:
+        try:
+            conn = self._getDBConn()
+            cursor = conn.cursor()
+            if accType.lower() == "savings":
+                account = SavingsAccount(customer, accNo, balance)
+            elif accType.lower() == "current":
+                account = CurrentAccount(customer, accNo, balance)
+            else:
+                account = ZeroBalanceAccount(customer, accNo)
+            cursor.execute("INSERT INTO accounts (account_number, customer_id, account_type, balance) VALUES (?, ?, ?, ?)",
+                           (account.account_number, customer.customer_id, accType, balance))
+            conn.commit()
+            return account
+        except sqlite3.Error as e:
+            print(f"Error creating account: {e}")
+        finally:
+            conn.close()
+
+    def listAccounts(self) -> List[Account]:
+        try:
+            conn = self._getDBConn()
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM accounts")
+            accounts = []
+            for row in cursor.fetchall():
+                customer = Customer(row[1], row[2], row[3], row[4], row[5])
+                if row[3].lower() == "savings":
+                    account = SavingsAccount(customer, row[0], row[6])
+                elif row[3].lower() == "current":
+                    account = CurrentAccount(customer, row[0], row[6])
+                else:
+                    account = ZeroBalanceAccount(customer, row[0])
+                accounts.append(account)
+            return accounts
+        except sqlite3.Error as e:
+            print(f"Error listing accounts: {e}")
+            return []
+        finally:
+            conn.close()
+
+    def calculateInterest(self):
+        pass
+
+    def getAccountBalance(self, account_number: int) -> float:
+        pass
+
+    def deposit(self, account_number: int, amount: float) -> float:
+        pass
+
+    def withdraw(self, account_number: int, amount: float) -> float:
+        pass
+
+    def transfer(self, from_account_number: int, to_account_number: int, amount: float) -> bool:
+        pass
+
+    def getAccountDetails(self, account_number: int) -> Account:
+        pass
+
+    def getTransactions(self, account_number: int, FromDate: datetime, ToDate: datetime) -> List[Transaction]:
+        pass
+
+    def _getDBConn(self) -> sqlite3.Connection:
+        try:
+            conn = sqlite3.connect(self.db_file)
+            return conn
+        except sqlite3.Error as e:
+            print(f"Error connecting to database: {e}")
+            raise e
+
+
+class DBUtil:
+    @staticmethod
+    def getDBConn() -> sqlite3.Connection:
+        try:
+            conn = sqlite3.connect("bank.db")
+            return conn
+        except sqlite3.Error as e:
+            print(f"Error connecting to database: {e}")
+            raise e
+
+
+class BankApp:
+    def __init__(self, bank_service_provider: IBankServiceProvider):
+        self.bank_service_provider = bank_service_provider
+
+    def main(self):
+        while True:
+            print("1. Create Account")
+            print("2. Deposit")
+            print("3. Withdraw")
+            print("4. Get Balance")
+            print("5. Transfer")
+            print("6. Get Account Details")
+            print("7. List Accounts")
+            print("8. Get Transactions")
+            print("9. Exit")
+
+            choice = int(input("Enter your choice: "))
+
+            if choice == 1:
+                self.create_account()
+            elif choice == 2:
+                self.deposit()
+            elif choice == 3:
+                self.withdraw()
+            elif choice == 4:
+                self.get_balance()
+            elif choice == 5:
+                self.transfer()
+            elif choice == 6:
+                self.get_account_details()
+            elif choice == 7:
+                self.list_accounts()
+            elif choice == 8:
+                self.get_transactions()
+            elif choice == 9:
+                print("Exiting...")
+                break
+            else:
+                print("Invalid choice")
+
+    def create_account(self):
+        print("Creating Account...")
+        # Implement account creation logic here using bank_service_provider
+
+    def deposit(self):
+        print("Depositing Amount...")
+        # Implement deposit logic here using bank_service_provider
+
+    def withdraw(self):
+        print("Withdrawing Amount...")
+        # Implement withdrawal logic here using bank_service_provider
+
+    def get_balance(self):
+        print("Getting Balance...")
+        # Implement get balance logic here using bank_service_provider
+
+    def transfer(self):
+        print("Transferring Amount...")
+        # Implement transfer logic here using bank_service_provider
+
+    def get_account_details(self):
+        print("Getting Account Details...")
+        # Implement get account details logic here using bank_service_provider
+
+    def list_accounts(self):
+        print("Listing Accounts...")
+        # Implement list accounts logic here using bank_service_provider
+
+    def get_transactions(self):
+        print("Getting Transactions...")
+        # Implement get transactions logic here using bank_service_provider
+
+
+if __name__ == "__main__":
+    bank_repository = BankRepositoryImpl("bank
