@@ -1,0 +1,40 @@
+def check_balance(balance):
+    print("Your current balance is: $", balance)
+
+def withdraw(balance, amount):
+    if amount > balance:
+        print("Insufficient funds. Please enter a valid amount.")
+    elif amount % 100 != 0 and amount % 500 != 0:
+        print("Withdrawal amount must be in multiples of 100 or 500.")
+    else:
+        balance -= amount
+        print("Withdrawal successful. Remaining balance: $", balance)
+    return balance
+
+def deposit(balance, amount):
+    balance += amount
+    print("Deposit successful. Current balance: $", balance)
+    return balance
+
+def main():
+    balance = float(input("Enter your current balance ($): "))
+    print("\nOptions:")
+    print("1. Check Balance")
+    print("2. Withdraw")
+    print("3. Deposit")
+
+    option = int(input("Enter option number: "))
+
+    if option == 1:
+        check_balance(balance)
+    elif option == 2:
+        amount = float(input("Enter amount to withdraw ($): "))
+        balance = withdraw(balance, amount)
+    elif option == 3:
+        amount = float(input("Enter amount to deposit ($): "))
+        balance = deposit(balance, amount)
+    else:
+        print("Invalid option selected.")
+
+if __name__ == "__main__":
+    main()
