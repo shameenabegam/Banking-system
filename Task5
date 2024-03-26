@@ -1,0 +1,17 @@
+def validate_password(password):
+    if len(password) < 8:
+        return "Password must be at least 8 characters long."
+    elif not any(char.isupper() for char in password):
+        return "Password must contain at least one uppercase letter."
+    elif not any(char.isdigit() for char in password):
+        return "Password must contain at least one digit."
+    else:
+        return "Password is valid."
+
+def main():
+    password = input("Create a password for your bank account: ")
+    validation_message = validate_password(password)
+    print(validation_message)
+
+if __name__ == "__main__":
+    main()
