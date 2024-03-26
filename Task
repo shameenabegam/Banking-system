@@ -1,0 +1,27 @@
+from typing import Dict
+
+class BankServiceProviderImpl(CustomerServiceProviderImpl, IBankServiceProvider):
+    def __init__(self):
+        self.accounts = {}  # HashMap of Accounts
+
+    def create_account(self, customer, acc_no, acc_type, balance):
+        if acc_type == "Savings":
+            new_account = SavingsAccount(customer, balance)
+        elif acc_type == "Current":
+            new_account = CurrentAccount(customer)
+        elif acc_type == "Zero Balance":
+            new_account = ZeroBalanceAccount(customer)
+        else:
+            raise ValueError("Invalid account type.")
+        new_account.account_number = acc_no
+        self.accounts[acc_no] = new_account
+        return new_account
+
+    def list_accounts(self):
+        return sorted(self.accounts.values(), key=lambda x: x.customer.get_last_name())
+
+    def calculate_interest(self):
+        for account in self.accounts.values():
+            if isinstance(account, SavingsAccount):
+                interest = account.account_balance * account.interest_rate
+                account.account_balance += interest
