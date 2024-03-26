@@ -1,0 +1,165 @@
+class Customer:
+    def __init__(self, customer_id=None, first_name=None, last_name=None, email=None, phone_number=None, address=None):
+        self.customer_id = customer_id
+        self.first_name = first_name
+        self.last_name = last_name
+        self.email = email
+        self.phone_number = phone_number
+        self.address = address
+    
+    def get_customer_id(self):
+        return self.customer_id
+    
+    def set_customer_id(self, customer_id):
+        self.customer_id = customer_id
+    
+    def get_first_name(self):
+        return self.first_name
+    
+    def set_first_name(self, first_name):
+        self.first_name = first_name
+    
+    def get_last_name(self):
+        return self.last_name
+    
+    def set_last_name(self, last_name):
+        self.last_name = last_name
+    
+    def get_email(self):
+        return self.email
+    
+    def set_email(self, email):
+        self.email = email
+    
+    def get_phone_number(self):
+        return self.phone_number
+    
+    def set_phone_number(self, phone_number):
+        self.phone_number = phone_number
+    
+    def get_address(self):
+        return self.address
+    
+    def set_address(self, address):
+        self.address = address
+    
+    def print_customer_info(self):
+        print("Customer ID:", self.customer_id)
+        print("First Name:", self.first_name)
+        print("Last Name:", self.last_name)
+        print("Email Address:", self.email)
+        print("Phone Number:", self.phone_number)
+        print("Address:", self.address)
+
+def main():
+        customer1 = Customer()
+
+    customer1.set_customer_id(1)
+    customer1.set_first_name("John")
+    customer1.set_last_name("Doe")
+    customer1.set_email("john.doe@example.com")
+    customer1.set_phone_number("123-456-7890")
+    customer1.set_address("123 Main Street, City, Country")
+    customer1.print_customer_info()    
+    customer2 = Customer(customer_id=2, first_name="Jane", last_name="Doe", email="jane.doe@example.com", 
+                         phone_number="987-654-3210", address="456 Oak Avenue, Town, Country")
+
+    customer2.print_customer_info()
+
+class Account:
+    def __init__(self, account_number=None, account_type=None, account_balance=None):
+        self.account_number = account_number
+        self.account_type = account_type
+        self.account_balance = account_balance
+    
+    def get_account_number(self):
+        return self.account_number
+    
+    def set_account_number(self, account_number):
+        self.account_number = account_number
+    
+    def get_account_type(self):
+        return self.account_type
+    
+    def set_account_type(self, account_type):
+        self.account_type = account_type
+    
+    def get_account_balance(self):
+        return self.account_balance
+    
+    def set_account_balance(self, account_balance):
+        self.account_balance = account_balance
+    
+    def print_account_info(self):
+        print("Account Number:", self.account_number)
+        print("Account Type:", self.account_type)
+        print("Account Balance:", self.account_balance)
+
+    def deposit(self, amount):
+        if amount > 0:
+            self.account_balance += amount
+            print("Deposit successful. Updated balance:", self.account_balance)
+        else:
+            print("Invalid deposit amount.")
+    
+    def withdraw(self, amount):
+        if amount > 0:
+            if self.account_balance >= amount:
+                self.account_balance -= amount
+                print("Withdrawal successful. Updated balance:", self.account_balance)
+            else:
+                print("Insufficient balance.")
+        else:
+            print("Invalid withdrawal amount.")
+    
+    def calculate_interest(self):
+        if self.account_type == "Savings":
+            interest_rate = 0.045  # 4.5% interest rate
+            interest_amount = self.account_balance * interest_rate
+            self.account_balance += interest_amount
+            print("Interest calculated and added to account balance. Updated balance:", self.account_balance)
+
+
+class Bank:
+    def __init__(self):
+        self.accounts = []
+
+    def create_account(self, account_number, account_type, initial_balance):
+        new_account = Account(account_number, account_type, initial_balance)
+        self.accounts.append(new_account)
+        return new_account
+
+    def deposit(self, account_number, amount):
+        for account in self.accounts:
+            if account.get_account_number() == account_number:
+                account.deposit(amount)
+                break
+        else:
+            print("Account not found.")
+
+    def withdraw(self, account_number, amount):
+        for account in self.accounts:
+            if account.get_account_number() == account_number:
+                account.withdraw(amount)
+                break
+        else:
+            print("Account not found.")
+
+    def calculate_interest(self, account_number):
+        for account in self.accounts:
+            if account.get_account_number() == account_number:
+                account.calculate_interest()
+                break
+        else:
+            print("Account not found.")
+
+def main():
+    bank = Bank()
+    bank.deposit(123456, 500)
+    bank.withdraw(123456, 200)
+    bank.calculate_interest(123456)
+    account1.print_account_info()
+
+if __name__ == "__main__":
+    main()
+
