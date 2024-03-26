@@ -1,0 +1,192 @@
+import re
+class Customer:
+    def __init__(self, customer_id=None, first_name=None, last_name=None, email=None, phone_number=None, address=None):
+        self.customer_id = customer_id
+        self.first_name = first_name
+        self.last_name = last_name
+        self.email = email
+        self.phone_number = phone_number
+        self.address = address
+    
+    def get_customer_id(self):
+        return self.customer_id
+    
+    def set_customer_id(self, customer_id):
+        self.customer_id = customer_id
+    
+    def get_first_name(self):
+        return self.first_name
+    
+    def set_first_name(self, first_name):
+        self.first_name = first_name
+    
+    def get_last_name(self):
+        return self.last_name
+    
+    def set_last_name(self, last_name):
+        self.last_name = last_name
+    
+    def get_email(self):
+        return self.email
+    
+    def set_email(self, email):
+        if re.match(r"[^@]+@[^@]+\.[^@]+", email):
+            self.email = email
+        else:
+            print("Invalid email address.")
+    
+    def get_phone_number(self):
+        return self.phone_number
+    
+    def set_phone_number(self, phone_number):
+        if len(str(phone_number)) == 10:
+            self.phone_number = phone_number
+        else:
+            print("Invalid phone number.")
+    
+    def get_address(self):
+        return self.address
+    
+    def set_address(self, address):
+        self.address = address
+    
+    def print_customer_info(self):
+        print("Customer ID:", self.customer_id)
+        print("First Name:", self.first_name)
+        print("Last Name:", self.last_name)
+        print("Email Address:", self.email)
+        print("Phone Number:", self.phone_number)
+        print("Address:", self.address)
+
+class Account:
+    account_number_generator = 1000
+
+    def __init__(self, account_type=None, account_balance=None, customer=None):
+        self.account_number = Account.account_number_generator
+        Account.account_number_generator += 1
+        self.account_type = account_type
+        self.account_balance = account_balance
+        self.customer = customer
+    
+    def get_account_number(self):
+        return self.account_number
+    
+    def get_account_type(self):
+        return self.account_type
+    
+    def set_account_type(self, account_type):
+        self.account_type = account_type
+    
+    def get_account_balance(self):
+        return self.account_balance
+    
+    def set_account_balance(self, account_balance):
+        self.account_balance = account_balance
+    
+    def get_customer(self):
+        return self.customer
+    
+    def set_customer(self, customer):
+        self.customer = customer
+    
+    def print_account_info(self):
+        print("Account Number:", self.account_number)
+        print("Account Type:", self.account_type)
+        print("Account Balance:", self.account_balance)
+        print("Customer Info:")
+        self.customer.print_customer_info()
+
+class Bank:
+    def __init__(self):
+        self.accounts = []
+
+    def create_account(self, customer, acc_type, balance):
+        new_account = Account(acc_type, balance, customer)
+        self.accounts.append(new_account)
+        return new_account
+
+    def get_account_balance(self, account_number):
+        for account in self.accounts:
+            if account.get_account_number() == account_number:
+                return account.get_account_balance()
+        return None
+
+    def deposit(self, account_number, amount):
+        for account in self.accounts:
+            if account.get_account_number() == account_number:
+                account.set_account_balance(account.get_account_balance() + amount)
+                return account.get_account_balance()
+        return None
+
+    def withdraw(self, account_number, amount):
+        for account in self.accounts:
+            if account.get_account_number() == account_number:
+                if account.get_account_balance() >= amount:
+                    account.set_account_balance(account.get_account_balance() - amount)
+                    return account.get_account_balance()
+                else:
+                    print("Insufficient balance.")
+                    return None
+        return None
+
+    def transfer(self, from_account_number, to_account_number, amount):
+        for account in self.accounts:
+            if account.get_account_number() == from_account_number:
+                if account.get_account_balance() >= amount:
+                    for account_to in self.accounts:
+                        if account_to.get_account_number() == to_account_number:
+                            account.set_account_balance(account.get_account_balance() - amount)
+                            account_to.set_account_balance(account_to.get_account_balance() + amount)
+                            return account.get_account_balance()
+                    print("Receiver account not found.")
+                    return None
+                else:
+                    print("Insufficient balance.")
+                    return None
+        print("Sender account not found.")
+        return None
+
+    def get_account_details(self, account_number):
+        for account in self.accounts:
+            if account.get_account_number() == account_number:
+                return account
+        return None
+
+class BankApp:
+    def main():
+        bank = Bank()
+        while True:
+            print("\nOptions:")
+            print("1. Create Account")
+            print("2. Get Balance")
+            print("3. Deposit")
+            print("4. Withdraw")
+            print("5. Transfer")
+            print("6. Get Account Details")
+            print("7. Exit")
+            choice = input("Enter your choice: ")
+            if choice == "1":
+                customer = Customer()
+                customer.set_customer_id(int(input("Enter Customer ID: ")))
+                customer.set_first_name(input("Enter First Name: "))
+                customer.set_last_name(input("Enter Last Name: "))
+                customer.set_email(input("Enter Email Address: "))
+                customer.set_phone_number(int(input("Enter Phone Number: ")))
+                customer.set_address(input("Enter Address: "))
+                print("Choose Account Type:")
+                print("1. Savings")
+                print("2. Current")
+                account_type = input("Enter your choice: ")
+                balance = float(input("Enter initial balance: "))
+                if account_type == "1":
+                    acc_type = "Savings"
+                elif account_type == "2":
+                    acc_type = "Current"
+                else:
+                    print("Invalid choice.")
+                    continue
+                account = bank.create_account(customer, acc_type, balance)
+                print("Account created successfully with Account Number:", account.get_account_number())
+            elif choice == "2":
+                account_number = int(input("Enter Account Number: "))
+                balance = bank.get_account_balance(account_number
